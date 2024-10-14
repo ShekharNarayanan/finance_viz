@@ -2,7 +2,7 @@
 Automate visualization and tracking of monthly finances.
 
 
-# Installation 
+# Installation (Developer Section)
 Installation instructions differ slightly for Windows and MacOS/Linux based users.
 
 ## Pre-reqs:
@@ -33,5 +33,8 @@ chmod +x install_reqs_on_mac_os.sh
 shell install_reqs_on_mac_os.sh
 ```
 
+### Recommended:
+1. If you wish to upload your versions of the jupyter notebooks for visualization or analysis of transaction data, please run or automate running the script ```mute_outputs.sh``` before you push to your repository. I wrote this script to avoid uploading any personal financial data.
+2. I used pre-push Git hook to achieve this. See [Git Hooks](https://git-scm.com/book/ms/v2/Customizing-Git-Git-Hooks) for more info. (set up instructions for this to follow in later versions)
 
  
