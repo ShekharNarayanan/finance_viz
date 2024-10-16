@@ -1,4 +1,6 @@
 #!/bin/bash
+# shell script to identify the operating system of the user and install requirements for the project accordingly
+
 
 # Detect the operating system
 OS_TYPE=$(uname)
