@@ -34,6 +34,6 @@ shell install_reqs_on_mac_os.sh
 ```
 
 ### Recommended:
-1. If you wish to upload your versions of the jupyter notebooks for visualization or analysis of transaction data, please removing sensitive outputs before you push. I do this using tools that can be found [here](https://github.com/ShekharNarayanan/everyday_tools/tree/main/jupyter).
+1. If you wish to upload your versions of the jupyter notebooks for visualization or analysis of transaction data, please consider removing sensitive outputs before you push. I do this using tools that can be found [here](https://github.com/ShekharNarayanan/everyday_tools/tree/main/jupyter).
 
  
