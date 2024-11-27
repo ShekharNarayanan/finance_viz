@@ -20,7 +20,7 @@ if cx is None:
     raise KeyError("Please set the GOOGLE_CUSTOMISED_SEARCH_ENGINE_ID environment variable. Use:conda env config vars set GOOGLE_CUSTOMISED_SEARCH_ENGINE_ID=...")
 
 # retrieve sample transaction data with details
-atd = AugmentTransactionData(proj_path=proj_path)
+atd = AugmentTransactionData()
 transaction_with_details = atd.get_transaction_details(remove_sensitive_data=True)
 
 

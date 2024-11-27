@@ -4,13 +4,21 @@ from pathlib import Path
 import re
 
 # set base variables
-proj_path = Path.cwd().parent / 'finance_viz'
+current_dir = Path.cwd().parent 
+
+# check if proj_path is correct (this sometimes throws an error 
+# when running the script from the notebook or the CLI)
+if current_dir.name == 'finance_viz':
+    proj_path = current_dir
+else:
+    proj_path = current_dir / 'finance_viz'
+
 transaction_file_path = proj_path / 'input_files' / 'sample_transaction_data.xls'
 
 
 class AugmentTransactionData():
 
-    def __init__(self, proj_path:str):
+    def __init__(self):
         self.proj_path = proj_path
 
     def get_transaction_data(self):
@@ -170,7 +178,7 @@ class AugmentTransactionData():
 if __name__ == '__main__':
 
     # initialize class
-    atd = AugmentTransactionData(proj_path)
+    atd = AugmentTransactionData()
 
     # get transactions with company details and locations
     transactions_with_companies = atd.get_transaction_details(remove_sensitive_data=True)
