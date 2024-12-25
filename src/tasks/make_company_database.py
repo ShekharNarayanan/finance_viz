@@ -7,6 +7,7 @@ import pandas as pd
 from tqdm import tqdm
 from ..utils.transaction_data_utils import *
 import os
+import argparse
 
 # set base variables
 cx = os.getenv("GOOGLE_CUSTOMISED_SEARCH_ENGINE_ID") # customised search engine ID 
@@ -60,7 +61,7 @@ def get_company_summary(db_path, company_name):
     return result[0] if result else None
 
 # Function to look up entity online and store in the database
-def lookup_and_store_company_summary(transactions_with_details: pd.DataFrame=transaction_with_details, api_key: str=api_key, cx: str=cx):
+def lookup_and_store_company_summary(transactions_with_details: pd.DataFrame=transaction_with_details, api_key: str=api_key, cx: str=cx, n_samples:int=100):
     """
     Lookup entity/companies online using Google Custom Search API and store their summaries in the database
     """
@@ -72,7 +73,7 @@ def lookup_and_store_company_summary(transactions_with_details: pd.DataFrame=tra
     # Base URL for Google Custom Search API
     url = "https://www.googleapis.com/customsearch/v1"
 
-    n_samples = 5
+    
     for company, location in tqdm(zip(companies[:n_samples], locations[:n_samples]), total=len(companies[:n_samples]), desc='Fetching company summaries'):
         
         # Check if the company already exists in the database
@@ -126,28 +127,36 @@ def lookup_and_store_company_summary(transactions_with_details: pd.DataFrame=tra
         # Insert or update company and summary in the database
         insert_or_update_company(db_path, company, summary)
 
-    # Function to print the contents of the database
-def print_database_contents(db_path):
+# Function to print the contents of the database
+def retrieve_database_contents(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM companies')
+    cursor.execute('SELECT name, summary FROM companies')
     rows = cursor.fetchall()
     conn.close()
     
-    for row in rows:
-        print(row)
-
+    # Convert the list of tuples to a list of dictionaries
+    companies_and_summaries = [{'company': row[0], 'summary': row[1]} for row in rows]
+    
+    return companies_and_summaries
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser(description='Select sample size of companies to look up')
+    parser.add_argument('--n_samples', type=int, help='Number of companies/ entitiies to look up online and store in the database')
+    args = parser.parse_args()
+    n_samples = args.n_samples
 
     # Initialize the database
     initialize_db(db_path)
 
     # Look up entity online and store in the database
-    lookup_and_store_company_summary()
+    lookup_and_store_company_summary(n_samples=n_samples)
 
-    print("Completed collecting company summaries. Printing first 5 rows...")
+    print("Completed collecting company summaries.")
 
-    # check sql data base output
-    print_database_contents(db_path)
+    # # check sql data base output
+    # rows  = retrieve_database_contents(db_path)
+    # for row in rows:
+    #     print(row)
     
