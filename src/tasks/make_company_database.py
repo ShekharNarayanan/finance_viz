@@ -33,19 +33,20 @@ def initialize_db(db_path=db_path):
         CREATE TABLE IF NOT EXISTS companies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT UNIQUE,
-            summary TEXT
+            summary TEXT,
+            location TEXT 
         )
     ''')
     conn.commit()
     conn.close()
 
 # Function to insert or update company names and summaries in the table
-def insert_or_update_company(db_path, company_name, summary):
+def insert_or_update_company(db_path, company_name, summary, location):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT OR REPLACE INTO companies (name, summary) VALUES (?, ?)
-    ''', (company_name, summary))
+        INSERT OR REPLACE INTO companies (name, summary, location) VALUES (?, ?, ?)
+    ''', (company_name, summary, location))
     conn.commit()
     conn.close()
 
@@ -119,24 +120,30 @@ def lookup_and_store_company_summary(transactions_with_details: pd.DataFrame=tra
                 summary = 'miscellaneous entity, could not use API to gather info.'
             else:
                 # translate summary to English 
-                first_result = items[0]['snippet']
+                try:                
+                    result = items[0]['snippet']
+
+                except KeyError as e:
+                    # try the next result
+                    result = items[1]['snippet']
+
                 translator = Translator()
-                translated_summary = translator.translate(first_result, dest='en')
+                translated_summary = translator.translate(result, dest='en')
                 summary = translated_summary.text
 
         # Insert or update company and summary in the database
-        insert_or_update_company(db_path, company, summary)
+        insert_or_update_company(db_path, company, summary, location)
 
 # Function to print the contents of the database
 def retrieve_database_contents(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute('SELECT name, summary FROM companies')
+    cursor.execute('SELECT name, summary, location FROM companies')
     rows = cursor.fetchall()
     conn.close()
     
     # Convert the list of tuples to a list of dictionaries
-    companies_and_summaries = [{'company': row[0], 'summary': row[1]} for row in rows]
+    companies_and_summaries = [{'company': row[0], 'summary': row[1], 'location' : row[2]} for row in rows]
     
     return companies_and_summaries
 
@@ -155,8 +162,9 @@ if __name__ == "__main__":
 
     print("Completed collecting company summaries.")
 
-    # # check sql data base output
-    # rows  = retrieve_database_contents(db_path)
-    # for row in rows:
-    #     print(row)
+    # check sql data base output
+    all_data  = retrieve_database_contents(db_path)
+    
+    print(f"total unique companies found: {len(all_data)}")
+
     
