@@ -23,6 +23,7 @@ cd path/to/your/directory
 pip install -r requirements.txt
 ```
 ### MacOS/ Linux 
+_Add conda env creation instructions here and possibly for the windows version as well_. Link to https://stackoverflow.com/questions/70205633/cannot-install-python-3-7-on-osx-arm64
 1. Navigate to your directory
 ```bash
 cd path/to/your/directory
