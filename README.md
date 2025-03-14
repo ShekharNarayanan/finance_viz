@@ -36,4 +36,8 @@ shell install_reqs_on_mac_os.sh
 ### Recommended:
 1. If you wish to upload your versions of the jupyter notebooks for visualization or analysis of transaction data, please consider removing sensitive outputs before you push.
 
+### Pending instructions and credits:
+Give proper credit to this [repository](https://github.com/thu-vu92/local-llms-analyse-finance) for the brilliant idea of using a local LLM.
+Add ollama installation instructions
+
  
