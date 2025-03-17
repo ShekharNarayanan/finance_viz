@@ -1,5 +1,5 @@
 # finance_viz
-Automate visualization and tracking of monthly finances.
+Automate visualization and tracking of monthly finances. Refer to the develop branch for latest updates.
 
 
 # Installation (Developer Section)
