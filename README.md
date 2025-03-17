@@ -1,5 +1,5 @@
 # finance_viz
-Automate visualization and tracking of monthly finances.
+Automate visualization and tracking of monthly finances. Refer to the develop branch for latest updates.
 
 
 # Installation (Developer Section)
@@ -23,6 +23,7 @@ cd path/to/your/directory
 pip install -r requirements.txt
 ```
 ### MacOS/ Linux 
+_Add conda env creation instructions here and possibly for the windows version as well_. Link to https://stackoverflow.com/questions/70205633/cannot-install-python-3-7-on-osx-arm64
 1. Navigate to your directory
 ```bash
 cd path/to/your/directory
@@ -34,6 +35,10 @@ shell install_reqs_on_mac_os.sh
 ```
 
 ### Recommended:
-1. If you wish to upload your versions of the jupyter notebooks for visualization or analysis of transaction data, please consider removing sensitive outputs before you push. I do this using tools that can be found [here](https://github.com/ShekharNarayanan/everyday_tools/tree/main/jupyter).
+1. If you wish to upload your versions of the jupyter notebooks for visualization or analysis of transaction data, please consider removing sensitive outputs before you push.
+
+### Pending instructions and credits:
+Give proper credit to this [repository](https://github.com/thu-vu92/local-llms-analyse-finance) for the brilliant idea of using a local LLM.
+Add ollama installation instructions
 
  
