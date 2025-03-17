@@ -1,1 +1,0 @@
-"src folder for the project"
