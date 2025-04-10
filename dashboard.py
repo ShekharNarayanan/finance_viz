@@ -16,6 +16,8 @@ df["valuedate"] = pd.to_datetime(df["valuedate"])  # Convert valuedate to dateti
 
 # get data for date slider
 marks, month_list = get_monthly_labels(df)
+custom_marks = {k: {'label': v, 'style': {'fontSize': '18px', 'fontWeight': 'bold'}}
+                for k, v in marks.items()}
 
 # get the most common categories for the dropdown
 common_categories = find_most_common_categories(df)
@@ -26,34 +28,70 @@ color_discrete_map = {"income": "green", "expense": "red"}
 app = Dash(__name__)
 
 # 3. Define layout with two charts + a simple filter
-app.layout = html.Div(
-    [
+app.layout = html.Div([
+
+    # Other components in order
+    html.Div(
         dcc.Dropdown(
             id="category-filter",
             options=[{"label": cat, "value": cat} for cat in df["Category"].unique()],
             multi=True,
-            placeholder="Select one or more categories",
+            placeholder="Select one or more categories"
         ),
+        style={"marginBottom": "20px"}  # add spacing after dropdown
+    ),
+    html.Div(
         dcc.RangeSlider(
             id="date-slider",
             min=0,
             max=len(month_list) - 1,
-            marks=get_monthly_labels(df)[0],
+            marks= custom_marks,
             value=[0, len(month_list) - 1],  # [start_index, end_index]
         ),
-        dcc.Graph(id="combined-chart"),
-    ]
-)
+        style={"marginBottom": "20px"}
+    ),
+    html.Div(
+        dcc.Checklist(
+            id="checklist",  # use your desired id
+            options=[
+                {"label": "Income", "value": "income"},
+                {"label": "Expenses", "value": "expense"}
+            ],
+            value=["income", "expense"],
+            inline=True,
+            style={
+                "fontWeight": "bold",
+                "fontSize": "30px",
+                "display": "inline-block"
+            }
+        ),
+        style={
+            "width": "100%",
+            "textAlign": "center",
+            "marginBottom": "20px"
+        }
+    ),
+
+    dcc.Graph(id="combined-chart")
+])
 
 
 # 4. Single callback: filter the data and return 3 figures
 @app.callback(
     Output("combined-chart", "figure"),
-    [Input("category-filter", "value"), Input("date-slider", "value")],
+    [
+        Input("category-filter", "value"),
+        Input("date-slider", "value"),
+        Input("checklist", "value"),
+    ],
 )
 # decorator function for the callback - this is how Dash knows to call this function when the input changes
-def update_charts(selected_categories, dateslider):
+def update_charts(selected_categories, dateslider, selected_types):
     # ============ 1) HANDLE INPUTS ============
+
+    # Select expense or income
+    if not selected_types:
+        selected_types = ["income", "expense"]
 
     # If none selected, use common_categories
     if not selected_categories:
@@ -73,10 +111,11 @@ def update_charts(selected_categories, dateslider):
     end_date = pd.to_datetime(end_month_str, format="%Y-%m") + pd.offsets.MonthEnd(0)
 
     # Filter df
-    filtered_df = df[df["Category"].isin(selected_categories)]
-    filtered_df = filtered_df[
-        (filtered_df["valuedate"] >= start_date)
-        & (filtered_df["valuedate"] <= end_date)
+    filtered_df = df[
+        (df["Category"].isin(selected_categories))
+        & (df["expense/income"].isin(selected_types))  # this line is key
+        & (df["valuedate"] >= start_date)
+        & (df["valuedate"] <= end_date)
     ]
 
     # ============ 2) CREATE INDIVIDUAL FIGS ============
@@ -157,12 +196,12 @@ def update_charts(selected_categories, dateslider):
             domain=dict(x=[0.0, 1.0], y=[0.0, 0.95])
         )  # Adjust to push it further down or up
         trace.update(
-        textfont=dict(
-            family="Arial Black",
-            size=14
-            # color="black"  # optional
+            textfont=dict(
+                family="Arial Black",
+                size=14,
+                # color="black"  # optional
+            )
         )
-    )
         combined_fig.add_trace(trace, row=1, col=2)
 
     # (C) Time Series => row=2, col=1 (spanning both columns if you like, but let's keep it col=1 for now)
@@ -176,7 +215,7 @@ def update_charts(selected_categories, dateslider):
 
     combined_fig.update_layout(
         # More top margin => extra space above the top row
-        margin=dict(l=100, b=80, t=250),
+        margin=dict(l=100, b=80, t=100),
         height=1200,
         width=1800,
         showlegend=True,
@@ -184,17 +223,17 @@ def update_charts(selected_categories, dateslider):
         # Move the figure title to the left
         title=dict(
             text="Visualized finances",
-            x=0.01,           # 0.0 = far left, 0.5 = center, 1.0 = far right
-            xanchor="left"
+            x=0.01,  # 0.0 = far left, 0.5 = center, 1.0 = far right
+            xanchor="left",
         ),
         # Position the legend near the top, to the right of the title
         legend=dict(
             orientation="h",  # horizontal legend
             yanchor="bottom",
-            y=1.05,           # just above the top plotting area
+            y=1.05,  # just above the top plotting area
             xanchor="left",
-            x=0.3,            # shift it right so it sits beside the title
-        )
+            x=0.3,  # shift it right so it sits beside the title
+        ),
     )
 
     return combined_fig
