@@ -16,8 +16,10 @@ df["valuedate"] = pd.to_datetime(df["valuedate"])  # Convert valuedate to dateti
 
 # get data for date slider
 marks, month_list = get_monthly_labels(df)
-custom_marks = {k: {'label': v, 'style': {'fontSize': '18px', 'fontWeight': 'bold'}}
-                for k, v in marks.items()}
+custom_marks = {
+    k: {"label": v, "style": {"fontSize": "18px", "fontWeight": "bold"}}
+    for k, v in marks.items()
+}
 
 # get the most common categories for the dropdown
 common_categories = find_most_common_categories(df)
@@ -28,52 +30,50 @@ color_discrete_map = {"income": "green", "expense": "red"}
 app = Dash(__name__)
 
 # 3. Define layout with two charts + a simple filter
-app.layout = html.Div([
-
-    # Other components in order
-    html.Div(
-        dcc.Dropdown(
-            id="category-filter",
-            options=[{"label": cat, "value": cat} for cat in df["Category"].unique()],
-            multi=True,
-            placeholder="Select one or more categories"
+app.layout = html.Div(
+    [
+        # Other components in order
+        html.Div(
+            dcc.Dropdown(
+                id="category-filter",
+                options=[
+                    {"label": cat, "value": cat} for cat in df["Category"].unique()
+                ],
+                multi=True,
+                placeholder="Select one or more categories",
+            ),
+            style={"marginBottom": "20px"},  # add spacing after dropdown
         ),
-        style={"marginBottom": "20px"}  # add spacing after dropdown
-    ),
-    html.Div(
-        dcc.RangeSlider(
-            id="date-slider",
-            min=0,
-            max=len(month_list) - 1,
-            marks= custom_marks,
-            value=[0, len(month_list) - 1],  # [start_index, end_index]
+        html.Div(
+            dcc.RangeSlider(
+                id="date-slider",
+                min=0,
+                max=len(month_list) - 1,
+                marks=custom_marks,
+                value=[0, len(month_list) - 1],  # [start_index, end_index]
+            ),
+            style={"marginBottom": "20px"},
         ),
-        style={"marginBottom": "20px"}
-    ),
-    html.Div(
-        dcc.Checklist(
-            id="checklist",  # use your desired id
-            options=[
-                {"label": "Income", "value": "income"},
-                {"label": "Expenses", "value": "expense"}
-            ],
-            value=["income", "expense"],
-            inline=True,
-            style={
-                "fontWeight": "bold",
-                "fontSize": "30px",
-                "display": "inline-block"
-            }
+        html.Div(
+            dcc.Checklist(
+                id="checklist",  # use your desired id
+                options=[
+                    {"label": "Income", "value": "income"},
+                    {"label": "Expenses", "value": "expense"},
+                ],
+                value=["income", "expense"],
+                inline=True,
+                style={
+                    "fontWeight": "bold",
+                    "fontSize": "30px",
+                    "display": "inline-block",
+                },
+            ),
+            style={"width": "100%", "textAlign": "center", "marginBottom": "20px"},
         ),
-        style={
-            "width": "100%",
-            "textAlign": "center",
-            "marginBottom": "20px"
-        }
-    ),
-
-    dcc.Graph(id="combined-chart")
-])
+        dcc.Graph(id="combined-chart"),
+    ]
+)
 
 
 # 4. Single callback: filter the data and return 3 figures
@@ -147,15 +147,22 @@ def update_charts(selected_categories, dateslider, selected_types):
         color_discrete_map=color_discrete_map,
     )
 
-    # Time-series (line)
-    fig_time = px.line(
-        filtered_df.sort_values("valuedate"),
-        x="valuedate",
-        y="amount",
-        labels={"amount": "Amount (Euros)"},
-        color="expense/income",
-        title="Amount Over Time",
-        color_discrete_map=color_discrete_map,
+    # Time-series with discrete bar charts
+    fig_time_bar = px.bar(
+    filtered_df.sort_values("valuedate"),
+    # If you want to treat each date as a category, you can convert it to a string.
+    x=filtered_df.sort_values("valuedate")["valuedate"].dt.strftime("%Y-%m-%d"),
+    y="amount",  # or "amount (euros)" if you use labels; see next step.
+    color="expense/income",
+    barmode="group",
+    title="Spending Over Time",
+    color_discrete_map=color_discrete_map
+)
+    # Now, update the layout of fig_bars so that the x-axis is treated as a discrete category axis.
+    fig_time_bar.update_layout(
+        xaxis=dict(type="category"),
+        # You can also adjust margins, font sizes, etc. here if desired:
+        margin=dict(l=50, r=50, t=50, b=100)
     )
 
     # ============ 3) MAKE SUBPLOTS ============
@@ -184,7 +191,7 @@ def update_charts(selected_categories, dateslider, selected_types):
     for trace in fig_bar.data:
         combined_fig.add_trace(trace, row=1, col=1)
         combined_fig.update_yaxes(
-            title_text=fig_time.layout.yaxis.title.text, row=1, col=1
+            title_text=fig_time_bar.layout.yaxis.title.text, row=1, col=1
         )
 
     # (B) Pie Chart => row=1, col=2
@@ -205,11 +212,13 @@ def update_charts(selected_categories, dateslider, selected_types):
         combined_fig.add_trace(trace, row=1, col=2)
 
     # (C) Time Series => row=2, col=1 (spanning both columns if you like, but let's keep it col=1 for now)
-    for trace in fig_time.data:
+    for trace in fig_time_bar.data:
         combined_fig.add_trace(trace, row=2, col=1)
+    
         combined_fig.update_yaxes(
-            title_text=fig_time.layout.yaxis.title.text, row=2, col=1
+            title_text=fig_time_bar.layout.yaxis.title.text, row=2, col=1
         )
+        
 
     # ============ 5) UPDATE LAYOUT ============
 
