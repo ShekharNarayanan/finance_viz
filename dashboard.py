@@ -21,6 +21,19 @@ custom_marks = {
     for k, v in marks.items()
 }
 
+# decide color pallette
+formal_palette =   [
+    "#FF2D00",  # Vibrant red
+    "#FF7A00",  # Bright orange
+    "#FFE900",  # Bold yellow
+    "#14DF00",  # Neon green
+    "#00C2FF",  # Electric aqua
+    "#0055FF",  # Strong blue
+    "#CE00FF",  # Intense purple
+    "#FF00C9",  # Vivid magenta
+]
+
+
 # get the most common categories for the dropdown
 common_categories = find_most_common_categories(df)
 
@@ -93,6 +106,7 @@ def update_charts(selected_categories, dateslider, selected_types):
     if not selected_types:
         selected_types = ["income", "expense"]
 
+
     # If none selected, use common_categories
     if not selected_categories:
         selected_categories = common_categories
@@ -118,6 +132,21 @@ def update_charts(selected_categories, dateslider, selected_types):
         & (df["valuedate"] <= end_date)
     ]
 
+    # handle color schemes based on whether income or expense is selected
+
+    color_scheme_change = False
+    if len(selected_types) == 1:
+        # Only one type is selected, so color scheme must change.
+        color_scheme_change = True
+        # Only one type is selected, so build a mapping from each category to a distinct color.
+        unique_categories = filtered_df["Category"].unique()
+        # Choose a qualitative palette of enough colors. For example, Plotly's 'Plotly' palette:
+        dynamic_map = {cat: formal_palette[i % len(formal_palette)] for i, cat in enumerate(unique_categories)}
+    else:
+        # Use the default red/green mapping
+        dynamic_map = color_discrete_map
+
+
     # ============ 2) CREATE INDIVIDUAL FIGS ============
 
     # Pie chart
@@ -125,9 +154,9 @@ def update_charts(selected_categories, dateslider, selected_types):
         filtered_df,
         names="Category",
         values="amount",
-        color="expense/income",
+        color=["Category" if color_scheme_change else "expense/income"][0],
         title="Amount by Category",
-        color_discrete_map=color_discrete_map,
+        color_discrete_map=dynamic_map,
     )
     fig_pie.update_traces(
         textposition="outside",
@@ -141,10 +170,10 @@ def update_charts(selected_categories, dateslider, selected_types):
         x="Category",
         y="amount",
         labels={"amount": "Amount (Euros)"},
-        color="expense/income",
+        color=["Category" if color_scheme_change else "expense/income"][0],
         barmode="group",
         title="Amount by Category",
-        color_discrete_map=color_discrete_map,
+        color_discrete_map=dynamic_map,
     )
 
     # Time-series with discrete bar charts
@@ -189,6 +218,7 @@ def update_charts(selected_categories, dateslider, selected_types):
 
     # (A) Bar Chart => row=1, col=1
     for trace in fig_bar.data:
+        trace.showlegend = False
         combined_fig.add_trace(trace, row=1, col=1)
         combined_fig.update_yaxes(
             title_text=fig_time_bar.layout.yaxis.title.text, row=1, col=1
