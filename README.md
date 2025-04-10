@@ -33,6 +33,12 @@ cd path/to/your/directory
 chmod +x install_reqs_on_mac_os.sh
 shell install_reqs_on_mac_os.sh
 ```
+3. Install the local package
+After creating the environment, write:
+```bash
+pip install -e .
+```
+This makes the finance_viz module available everywhere in the notebooks where you can develop your own customizations.
 
 ### Recommended:
 1. If you wish to upload your versions of the jupyter notebooks for visualization or analysis of transaction data, please consider removing sensitive outputs before you push.
