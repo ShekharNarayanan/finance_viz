@@ -1,8 +1,30 @@
 # finance_viz
 Automate visualization and tracking of monthly finances. Refer to the develop branch for latest updates.
 
+**Meet finance_viz — your money’s new highlight-reel.
+Plug in a spreadsheet and watch every euro sprint onto a slick, dark-mode dashboard: animated bars for spending bursts, donut slices for sneaky costs, KPIs that flip in real-time when you drag the date slider.
+Stop squinting at rows and start seeing where your cash goes — finance_viz turns raw transactions into instant, scroll-stopping stories.**
 
-# Installation (Developer Section)
+P.S: Recommender system coming soon. Maybe 😁
+
+## Sneak Peek
+
+<!-- Static screenshot -->
+![Finance Viz dashboard](img/dashboard.PNG)
+
+<!-- Short looping video (GitHub renders <video> tags) -->
+<video src="img/dashboard_vid.mp4" width="700" autoplay loop muted controls>
+  Your browser doesn’t support HTML5 video. Here’s a
+  <a href="img/dashboard_vid.mp4">link to the video</a> instead.
+</video>
+
+
+
+
+
+
+
+# Installation and Usage (Developer Section)
 Installation instructions differ slightly for Windows and MacOS/Linux based users.
 
 ## Pre-reqs:
