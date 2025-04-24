@@ -13,10 +13,7 @@ P.S: Recommender system coming soon. Maybe 😁
 ![Finance Viz dashboard](img/dashboard.PNG)
 
 <!-- Short looping video (GitHub renders <video> tags) -->
-<video src="img/dashboard_vid.mp4" width="700" autoplay loop muted controls>
-  Your browser doesn’t support HTML5 video. Here’s a
-  <a href="img/dashboard_vid.mp4">link to the video</a> instead.
-</video>
+![Live demo](img/dashboard_demo.gif)
 
 
 
