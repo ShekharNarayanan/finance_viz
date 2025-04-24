@@ -13,7 +13,7 @@ P.S: Recommender system coming soon. Maybe 😁
 ![Finance Viz dashboard](img/dashboard.PNG)
 
 <!-- Short looping video (GitHub renders <video> tags) -->
-![Live demo](img/dashboard_demo.gif)
+![Live demo](img/dashboard.gif)
 
 
 
