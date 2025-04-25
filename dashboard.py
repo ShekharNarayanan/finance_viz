@@ -21,13 +21,12 @@ custom_marks = {
     i: {
         "label": m.replace("-", "/"),
         "style": {
-            "fontSize": "14px",
+            "fontSize": "16px",        # was 14px
             "fontWeight": "bold",
             "color": "#D1D5DB",
             "transform": "translateY(10px) rotate(-25deg)",
         },
-    }
-    for i, m in marks.items()
+    } for i, m in marks.items()
 }
 common_categories = find_most_common_categories(df)
 
@@ -102,140 +101,160 @@ def insight_card(rec):
     )
 
 
-
 app.layout = html.Div(
     style={"backgroundColor": PAGE_BG, "minHeight": "100vh", "padding": "1rem"},
     children=[
-        dbc.Container(
-            fluid=True,
-            children=[
-                # KPI ROW ------------------------------------------------------------
-                dbc.Row(
+        dbc.Container(fluid=True, children=[
+
+            # ── KPI ROW ───────────────────────────────────────────────
+            dbc.Row([
+                dbc.Col(kpi_card("Total Income",  "income-kpi",  INCOME_CLR),  md=4),
+                dbc.Col(kpi_card("Total Expense", "expense-kpi", EXPENSE_CLR), md=4),
+                dbc.Col(kpi_card("Net Balance",   "net-kpi"),                md=4),
+            ], className="mb-4"),
+
+            # ── CONTROLS ROW ─────────────────────────────────────────
+            dbc.Row([
+
+                # Category dropdown
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="category-filter",
+                        options=[{"label": c, "value": c} for c in df["Category"].unique()],
+                        multi=True,
+                        placeholder="Select categories",
+                        style={
+                            "fontWeight": "bold",
+                            "backgroundColor": "white",
+                            "color": "black"
+                        }
+                    ),
+                    md=4
+                ),
+
+                # Date‐slider + heading
+                dbc.Col(
                     [
-                        dbc.Col(
-                            kpi_card("Total Income", "income-kpi", INCOME_CLR), md=4
+                        html.H6(
+                            "Select Date Range",
+                            style={
+                                "color": TXT_PRI,
+                                "fontSize": "18px",
+                                "fontWeight": "bold"
+                            }
                         ),
-                        dbc.Col(
-                            kpi_card("Total Expense", "expense-kpi", EXPENSE_CLR), md=4
-                        ),
-                        dbc.Col(kpi_card("Net Balance", "net-kpi"), md=4),
+                        dcc.RangeSlider(
+                            id="date-slider",
+                            min=0,
+                            max=len(month_list) - 1,
+                            step=1,
+                            marks=custom_marks,
+                            value=[0, len(month_list) - 1],
+                            tooltip={"placement": "bottom"}
+                        )
                     ],
-                    className="mb-4",
+                    md=5
                 ),
-                # RECOMMENDER ROW -----------------------------------------------------
-                dbc.Row(
+
+                # Checklist + heading
+                dbc.Col(
                     [
-                        dbc.Col(
-                            dbc.Card(
-                                [html.H4("Suggested actions", style={"color": TXT_PRI})]
-                                + [insight_card(r) for r in insights]
-                                or [
-                                    html.P(
-                                        "No urgent insights 🙂",
-                                        style={"color": TXT_PRI},
-                                    )
-                                ],
-                                body=True,
-                                style={"backgroundColor": CARD_BG, "border": "none"},
-                            ),
-                            md=4,
+                        html.H6(
+                            "Transaction Types",
+                            style={
+                                "color": TXT_PRI,
+                                "fontSize": "18px",
+                                "fontWeight": "bold",
+                                "textAlign": "center"
+                            }
                         ),
+                        dcc.Checklist(
+                            id="checklist",
+                            options=[
+                                {"label": "Income",  "value": "income"},
+                                {"label": "Expense", "value": "expense"}
+                            ],
+                            value=["income", "expense"],
+                            inline=True,
+                            style={
+                                "fontSize": "18px",
+                                "fontWeight": "bold",
+                                "color": TXT_PRI,
+                                "textAlign": "center"
+                            }
+                        )
                     ],
-                    className="mb-4",
+                    md=3
                 ),
-                # CONTROLS -----------------------------------------------------------
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dcc.Dropdown(
-                                id="category-filter",
-                                options=[
-                                    {"label": c, "value": c}
-                                    for c in df["Category"].unique()
-                                ],
-                                multi=True,
-                                placeholder="Select categories",
-                                style={
-                                    "fontWeight": "bold",
-                                    "backgroundColor": "white",
-                                    "color": "black",
-                                },
-                            ),
-                            md=4,
-                        ),
-                        dbc.Col(
-                            dcc.RangeSlider(
-                                id="date-slider",
-                                min=0,
-                                max=len(month_list) - 1,
-                                step=1,
-                                marks=custom_marks,
-                                value=[0, len(month_list) - 1],
-                                tooltip={"placement": "bottom"},
-                            ),
-                            md=5,
-                        ),
-                        dbc.Col(
-                            dcc.Checklist(
-                                id="checklist",
-                                options=[
-                                    {"label": "Income", "value": "income"},
-                                    {"label": "Expense", "value": "expense"},
-                                ],
-                                value=["income", "expense"],
-                                inline=True,
-                                style={
-                                    "fontSize": "18px",
-                                    "fontWeight": "bold",
-                                    "color": TXT_PRI,
-                                },
-                            ),
-                            md=3,
-                            style={"textAlign": "center"},
-                        ),
-                    ],
-                    className="mb-4 align-items-center",
+
+            ], className="mb-4 align-items-start"),
+
+            # ── TOP CHARTS + INSIGHTS ROW ────────────────────────────
+            dbc.Row([
+
+                # Bar chart (left)
+                dbc.Col(
+                    dbc.Card(
+                        dcc.Graph(id="bar-chart", animate=True),
+                        body=True,
+                        style={"backgroundColor": CARD_BG, "border": "none"}
+                    ),
+                    md=6
                 ),
-                # CHARTS -------------------------------------------------------------
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.Card(
-                                dcc.Graph(id="bar-chart", animate=True),
-                                body=True,
-                                style={"backgroundColor": CARD_BG, "border": "none"},
-                            ),
-                            md=6,
-                        ),
-                        dbc.Col(
-                            dbc.Card(
-                                dcc.Graph(
-                                    id="pie-chart", animate=False
-                                ),  # full redraw each time
-                                body=True,
-                                style={"backgroundColor": CARD_BG, "border": "none"},
-                            ),
-                            md=6,
-                        ),
-                    ],
-                    className="mb-4",
+
+                # Suggested actions (right)
+                dbc.Col(
+                    dbc.Card(
+                        [html.H4(
+                            "Suggested actions",
+                            style={
+                                "color": TXT_PRI,
+                                "fontWeight": "bold",
+                                "fontSize": "20px"
+                            }
+                        )]
+                        + [insight_card(r) for r in insights]
+                        or [html.P(
+                            "No urgent insights 🙂",
+                            style={"color": TXT_PRI, "fontSize": "16px"}
+                        )],
+                        body=True,
+                        style={"backgroundColor": CARD_BG, "border": "none"}
+                    ),
+                    md=6
                 ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.Card(
-                                dcc.Graph(id="time-chart", animate=True),
-                                body=True,
-                                style={"backgroundColor": CARD_BG, "border": "none"},
-                            ),
-                            md=12,
-                        ),
-                    ]
+
+            ], className="mb-4"),
+
+            # ── BOTTOM CHARTS ROW ─────────────────────────────────────
+            dbc.Row([
+
+                # Pie chart (~40%)
+                dbc.Col(
+                    dbc.Card(
+                        dcc.Graph(id="pie-chart", animate=False),
+                        body=True,
+                        style={"backgroundColor": CARD_BG, "border": "none"}
+                    ),
+                    md=5
                 ),
-            ],
-        )
-    ],
+
+                # Time-series (~60%)
+                dbc.Col(
+                    dbc.Card(
+                        dcc.Graph(id="time-chart", animate=True),
+                        body=True,
+                        style={"backgroundColor": CARD_BG, "border": "none"}
+                    ),
+                    md=7
+                ),
+
+            ]),
+
+        ])
+    ]
 )
+
 
 
 # ── 4. CALLBACK ---------------------------------------------------------
@@ -287,23 +306,33 @@ def refresh(cats, slider, types):
     # ── TOP LEFT BAR (legend kept) --------------------------------------
     bar_fig = px.bar(
         d_tot,
-        x="Category",
-        y="amount",
+        x="Category", y="amount",
         color=hue,
         color_discrete_map=cmap,
         title="Amount by Category",
-        template="plotly_dark",
+        template="plotly_dark"
     )
+
+    # define the same clean ticks you used below
+    clean_ticks = [1_000, 5_000, 10_000, 20_000]
 
     bar_fig.update_layout(
         font=BOLD_FONT,
-        paper_bgcolor=CARD_BG,
-        plot_bgcolor=CARD_BG,
+        paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
         xaxis=dict(gridcolor=GRID_CLR, tickfont=BOLD_FONT),
-        yaxis=dict(gridcolor=GRID_CLR, tickfont=BOLD_FONT),
-        legend_title_text="",  # ←  remove legend title
-        transition=TRANSITION,
+        yaxis=dict(
+            # keep linear scale here, but force only these ticks
+            type="linear",
+            tickmode="array",
+            tickvals=clean_ticks,
+            ticktext=[f"€{v:,}" for v in clean_ticks],
+            gridcolor=GRID_CLR,
+            tickfont=BOLD_FONT
+        ),
+        legend_title_text="",
+        transition=TRANSITION
     )
+
 
     # ── PIE -------------------------------------------------------------
     pie_data = d_tot[d_tot["amount"] > 0]
@@ -328,7 +357,7 @@ def refresh(cats, slider, types):
         title="Transactions Over Time", template="plotly_dark"
     )
 
-    clean_ticks = [1, 10, 100, 1_000, 10_000]          # adjust max if needed
+    clean_ticks = [100, 500, 2_000]          # adjust max if needed
     time_fig.update_layout(
         font=BOLD_FONT,
         paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
