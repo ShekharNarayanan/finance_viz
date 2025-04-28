@@ -202,26 +202,25 @@ app.layout = html.Div(
                     md=6
                 ),
 
-                # Suggested actions (right)
+                # SUGGESTED ACTIONS OR INSIGHTS (right)
                 dbc.Col(
                     dbc.Card(
-                        [html.H4(
-                            "Suggested actions",
-                            style={
-                                "color": TXT_PRI,
-                                "fontWeight": "bold",
-                                "fontSize": "20px"
-                            }
-                        )]
-                        + [insight_card(r) for r in insights]
-                        or [html.P(
-                            "No urgent insights 🙂",
-                            style={"color": TXT_PRI, "fontSize": "16px"}
-                        )],
+                        children=[
+                            html.H5(
+                                "Suggested actions",
+                                style={
+                                    "color": TXT_PRI,
+                                    "fontWeight": "bold",
+                                    "fontSize": "20px",
+                                    "paddingLeft": "1rem",
+                                },
+                            ),
+                            html.Ul(id="insight-list", style={"paddingLeft": "1rem"})
+                        ],
                         body=True,
-                        style={"backgroundColor": CARD_BG, "border": "none"}
+                        style={"backgroundColor": CARD_BG, "border": "none"},
                     ),
-                    md=6
+                    md=6,
                 ),
 
             ], className="mb-4"),
@@ -259,15 +258,17 @@ app.layout = html.Div(
 
 # ── 4. CALLBACK ---------------------------------------------------------
 @app.callback(
-    Output("income-kpi", "children"),
-    Output("expense-kpi", "children"),
-    Output("net-kpi", "children"),
-    Output("bar-chart", "figure"),
-    Output("pie-chart", "figure"),
-    Output("time-chart", "figure"),
-    Input("category-filter", "value"),
-    Input("date-slider", "value"),
-    Input("checklist", "value"),
+    # add one more Output for your insights-list, e.g. html.Ul children
+    Output("insight-list", "children"),
+    Output("income-kpi","children"),
+    Output("expense-kpi","children"),
+    Output("net-kpi","children"),
+    Output("bar-chart","figure"),
+    Output("pie-chart","figure"),
+    Output("time-chart","figure"),
+    Input("category-filter","value"),
+    Input("date-slider","value"),
+    Input("checklist","value"),
 )
 def refresh(cats, slider, types):
     if not types:
@@ -284,6 +285,28 @@ def refresh(cats, slider, types):
         & df["valuedate"].between(start, end)
     ].copy()
 
+    # insights 
+    lookback_n = e_idx - s_idx + 1
+    insights = recommender.generate_insights(
+        df,                    # still feed the *full* df so it can compute historical
+        lookback_months=lookback_n,
+        top_k=5
+    )
+
+    # UI of insights
+    insight_items = []
+    for rec in insights:
+        insight_items.append(
+            html.Li([
+                html.Strong(rec["title"], style={"color":TXT_PRI}),
+                html.Br(),
+                html.Small(rec["detail"], style={"color":TXT_PRI})
+            ], style={"marginBottom":"0.5rem"})
+        )
+    if not insight_items:
+        insight_items = [html.Li("No urgent insights 🙂", style={"color":TXT_PRI})]
+
+    # KPIs
     inc, exp = (
         d.loc[d["expense/income"] == t, "amount"].sum() for t in ("income", "expense")
     )
@@ -377,7 +400,15 @@ def refresh(cats, slider, types):
     )
 
 
-    return (f"€{inc:,.2f}", f"€{exp:,.2f}", f"€{net:,.2f}", bar_fig, pie_fig, time_fig)
+    return (
+      insight_items,               # goes to Output("insight-list","children")
+      f"€{inc:,.2f}",              # Output("income-kpi","children")
+      f"€{exp:,.2f}",              # Output("expense-kpi","children")
+      f"€{net:,.2f}",              # Output("net-kpi","children")
+      bar_fig,                     # Output("bar-chart","figure")
+      pie_fig,                     # Output("pie-chart","figure")
+      time_fig                     # Output("time-chart","figure")
+    )
 
 
 # ── 5. RUN SERVER ──────────────────────────────────────────────────────
