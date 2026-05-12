@@ -2,9 +2,8 @@
 Automate visualization and tracking of monthly finances. Refer to the develop branch for latest updates.
 
 **Meet finance_viz**
-Visualize your monthly transactions safely. Uses local LLMs. Built for the Dutch bank transactions.
+Visualize your monthly transactions safely. Uses local LLMs. Built for the Dutch bank transactions. 
 
-P.S: Recommender system coming soon. Maybe 😁
 
 ## Sneak Peek
 
