@@ -1,9 +1,8 @@
 # finance_viz
 Automate visualization and tracking of monthly finances. Refer to the develop branch for latest updates.
 
-**Meet finance_viz — your money’s new highlight-reel.
-Plug in a spreadsheet and watch every euro sprint onto a slick, dark-mode dashboard: animated bars for spending bursts, donut slices for sneaky costs, KPIs that flip in real-time when you drag the date slider.
-Stop squinting at rows and start seeing where your cash goes — finance_viz turns raw transactions into instant, scroll-stopping stories.**
+**Meet finance_viz**
+Visualize your monthly transactions safely. Uses local LLMs. Built for the Dutch bank transactions.
 
 P.S: Recommender system coming soon. Maybe 😁
 
